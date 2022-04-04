@@ -1,0 +1,10 @@
+General:
+    Logging/monitoring
+    Error handling
+    Time out lookups
+
+DNS:
+    Recursive resolver
+    Caching (use Moka)
+    Zone file parsing
+    DNS over TLS

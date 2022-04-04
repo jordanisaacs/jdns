@@ -69,13 +69,6 @@ where
         sock.set_recv_buffer_size(512 * 1500)?;
 
         sock.set_nonblocking(true)?;
-        println!(
-            "Addr: {:?}, {:?}, {:?}",
-            single_addr,
-            sock.local_addr(),
-            sock.peer_addr()
-        );
-
         let udp_sock = UdpSocket::from_std(sock.into())?;
         Ok(udp_sock.into())
     }
@@ -152,6 +145,10 @@ where
             join_handles.push(join_handle);
         }
 
+        println!(
+            "Starting UDP server on: {:?}",
+            self.threads[0].sock.local_addr()
+        );
         join_all(join_handles).await;
 
         Ok(())
