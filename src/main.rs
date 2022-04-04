@@ -1,42 +1,20 @@
+pub mod dns;
 pub mod udp;
+
 use std::{
     net::{Ipv4Addr, SocketAddr},
     sync::Arc,
 };
 
+use dns::packet::{new_dns_packet, Dns, RCode};
+
 use bytes::Bytes;
 use dashmap::{mapref::entry::Entry, DashMap};
-use dns_message_parser::{Dns, Flags, Opcode, RCode};
 use udp::{server::UdpServer, TxUdp};
 
 struct DnsState {
     addr: SocketAddr,
     tx: TxUdp,
-}
-
-fn new_dns_packet() -> Dns {
-    // https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.1
-    // https://datatracker.ietf.org/doc/html/rfc2535 for AD & CD
-    let flags = Flags {
-        opcode: Opcode::Query, // Operation code
-        qr: false,             // Query Response
-        rd: false,             // Recursion Desired
-        ra: false,             // Recursion Available
-        tc: false,             // Truncation
-        aa: false,             // Authoritative Answer
-        ad: false,             // Authed Data
-        cd: false,             // Checking Disabled
-        rcode: RCode::NoError,
-    };
-
-    Dns {
-        id: 0,
-        flags,
-        questions: Vec::new(),
-        answers: Vec::new(),
-        authorities: Vec::new(),
-        additionals: Vec::new(),
-    }
 }
 
 async fn handle(
@@ -47,7 +25,6 @@ async fn handle(
 ) -> () {
     let packet = Dns::decode(data).unwrap();
     let server: SocketAddr = (Ipv4Addr::new(8, 8, 8, 8), 53).into();
-
     let entry = state.entry(packet.id);
 
     match entry {
