@@ -17,6 +17,20 @@ struct DnsState {
     tx: TxUdp,
 }
 
+fn lookup(packet: Dns, state: DnsState) {
+    if !packet.flags.qr {
+        println!("a query when supposed to be response");
+        return;
+    }
+
+    println!("Response: {:?}", packet.encode().unwrap());
+
+    state
+        .tx
+        .send((packet.encode().unwrap().freeze(), state.addr))
+        .unwrap();
+}
+
 async fn handle(
     addr: SocketAddr,
     data: Bytes,
@@ -32,20 +46,7 @@ async fn handle(
             if addr != server {
                 return;
             }
-
             let (_, dns_state) = entry.remove_entry();
-
-            if !packet.flags.qr {
-                println!("a query when supposed to be response");
-                return;
-            }
-
-            println!("Response: {:?}", packet.encode().unwrap());
-
-            dns_state
-                .tx
-                .send((packet.encode().unwrap().freeze(), dns_state.addr))
-                .unwrap();
         }
         Entry::Vacant(entry) => {
             let mut lookup = new_dns_packet();
