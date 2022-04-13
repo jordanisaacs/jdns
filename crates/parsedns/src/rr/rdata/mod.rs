@@ -1,5 +1,34 @@
+// RFC1035
 mod a;
+mod cname;
+mod hinfo;
+mod mb;
+mod md;
+mod mf;
+mod mg;
+mod minfo;
+mod mr;
+mod mx;
+mod ns;
+mod null;
+mod ptr;
 mod soa;
+mod txt;
+mod wks;
 
 pub use a::*;
+pub use cname::*;
+pub use hinfo::*;
+pub use mb::*;
+pub use md::*;
+pub use mf::*;
+pub use mg::*;
+pub use minfo::*;
+pub use mr::*;
+pub use mx::*;
+pub use ns::*;
+pub use null::*;
+pub use ptr::*;
 pub use soa::*;
+pub use txt::*;
+pub use wks::*;

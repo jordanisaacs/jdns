@@ -9,6 +9,7 @@ use crate::{
     error::{ParserError, ParserErrorType},
     indexed_input::IByteInput,
     traits::Parse,
+    utils::TTL,
 };
 
 use super::{class::RecordClass, data::RecordData, name::Name, rdata::*, types::RecordType};
@@ -58,7 +59,7 @@ pub struct Record {
     /// TTL value is the less significant 31 bits of the 32 bit TTL field. If the most significant
     /// bit is set, treat the entire value recieved as 0. [RFC2181 TTL](https://datatracker.ietf.org/doc/html/rfc2181#section-8)
     ///
-    ttl: u32,
+    ttl: TTL,
     /// a variable length string of octets that describes the resource. The format of this
     /// information varies according to the TYPE and CLASS of the resource record. For example if
     /// the TYPE is A and the CLASS is IN, the RDATA field is a 4 octet ARPA internet address.
@@ -66,11 +67,6 @@ pub struct Record {
 }
 
 impl Record {
-    fn parse_ttl(i: IByteInput) -> IResult<IByteInput, u32, ParserError> {
-        const SIGN_MASK: u32 = 0x1 << 31;
-        map(be_u32, |v| if v & SIGN_MASK == SIGN_MASK { 0 } else { v })(i)
-    }
-
     fn parse_rdata<'a>(
         i: IByteInput<'a>,
         rtype: &RecordType,
@@ -94,7 +90,7 @@ impl Parse for Record {
         let (i, name) = Name::parse(i)?;
         let (i, rtype) = RecordType::parse(i)?;
         let (i, class) = RecordClass::parse(i)?;
-        let (i, ttl) = Self::parse_ttl(i)?;
+        let (i, ttl) = TTL::parse(i)?;
         let (i, rdata) = Self::parse_rdata(i, &rtype, &class)?;
 
         Ok((
