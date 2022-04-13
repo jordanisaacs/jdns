@@ -15,4 +15,5 @@ use super::rdata::*;
 
 pub enum RecordData {
     A(A),
+    SOA(SOA),
 }

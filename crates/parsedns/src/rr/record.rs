@@ -11,7 +11,7 @@ use crate::{
     traits::Parse,
 };
 
-use super::{class::RecordClass, data::RecordData, name::Name, rdata::A, types::RecordType};
+use super::{class::RecordClass, data::RecordData, name::Name, rdata::*, types::RecordType};
 
 /// ```text
 /// The answer, authority, and additional sections all share the same
@@ -53,19 +53,19 @@ pub struct Record {
     /// record may be cached before it should be discarded. Zero value are interpreted to mean that
     /// the RR can only be used for the transaction in progress, and should not be cached.
     ///
-    /// Unsigned [errata](https://www.rfc-editor.org/errata/eid2130)
+    /// Unsigned value [errata](https://www.rfc-editor.org/errata/eid2130)
+    ///
+    /// TTL value is the less significant 31 bits of the 32 bit TTL field. If the most significant
+    /// bit is set, treat the entire value recieved as 0. [RFC2181 TTL](https://datatracker.ietf.org/doc/html/rfc2181#section-8)
+    ///
     ttl: u32,
-    /// a variable length string of octets taht describes the resource. The format of this
+    /// a variable length string of octets that describes the resource. The format of this
     /// information varies according to the TYPE and CLASS of the resource record. For example if
     /// the TYPE is A and the CLASS is IN, the RDATA field is a 4 octet ARPA internet address.
     rdata: RecordData,
 }
 
 impl Record {
-    /// TTL value is the less significant 31 bits of the 32 bit TTL field. If the most significant
-    /// bit is set, treat the entire value recieved as 0
-    ///
-    /// [RFC2181 Time to Live (TTL)](https://datatracker.ietf.org/doc/html/rfc2181#section-8)
     fn parse_ttl(i: IByteInput) -> IResult<IByteInput, u32, ParserError> {
         const SIGN_MASK: u32 = 0x1 << 31;
         map(be_u32, |v| if v & SIGN_MASK == SIGN_MASK { 0 } else { v })(i)
@@ -81,6 +81,7 @@ impl Record {
 
         let rdata = match (rtype, class) {
             (RecordType::A, RecordClass::IN) => RecordData::A(A::parse(rdata_buf)?.1),
+            (RecordType::SOA, _) => RecordData::SOA(SOA::parse(rdata_buf)?.1),
             _ => todo!(),
         };
 
