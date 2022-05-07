@@ -9,8 +9,7 @@ pub use dns_message_parser::{
 pub fn new_dns_packet() -> Dns {
     // https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.1
     // https://datatracker.ietf.org/doc/html/rfc2535 for AD & CD
-    let flags = Flags {
-        opcode: Opcode::Query, // Operation code
+    let flags = Flags { opcode: Opcode::Query, // Operation code
         qr: false,             // Query Response
         rd: false,             // Recursion Desired
         ra: false,             // Recursion Available
@@ -34,8 +33,7 @@ pub fn new_dns_packet() -> Dns {
 pub fn get_random_a(packet: &Dns) -> Option<Ipv4Addr> {
     packet.answers.iter().find_map(|record| match record {
         RR::A(A { ipv4_addr, .. }) => Some(*ipv4_addr),
-        _ => None,
-    })
+        _ => None, })
 }
 
 pub fn get_ns<'a>(
